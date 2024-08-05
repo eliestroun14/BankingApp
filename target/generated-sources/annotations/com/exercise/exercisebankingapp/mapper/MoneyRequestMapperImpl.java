@@ -5,7 +5,7 @@ import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-08-05T11:59:25+0200",
+    date = "2024-08-05T12:07:20+0200",
     comments = "version: 1.5.2.Final, compiler: javac, environment: Java 22.0.1 (Oracle Corporation)"
 )
 public class MoneyRequestMapperImpl implements MoneyRequestMapper {
