@@ -1,7 +1,7 @@
 package com.exercise.exercisebankingapp.mapper;
 
 import com.exercise.exercisebankingapp.dataTransferObject.UserUpdateDTO;
-import com.exercise.exercisebankingapp.entity.User;
+import com.exercise.exercisebankingapp.entity.MyUser;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -13,28 +13,28 @@ public interface UserMapper {
 
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
-    UserUpdateDTO userToUserUpdateDTO(User user);
+    UserUpdateDTO userToUserUpdateDTO(MyUser myUser);
 
-    User userUpdateDTOToUser(UserUpdateDTO userUpdateDTO);
+    MyUser userUpdateDTOToUser(UserUpdateDTO userUpdateDTO);
 
-    void updateUserFromDTO(UserUpdateDTO userUpdateDTO, @MappingTarget User user);
+    void updateUserFromDTO(UserUpdateDTO userUpdateDTO, @MappingTarget MyUser myUser);
 
     @AfterMapping
-    default void handleNulls(UserUpdateDTO userUpdateDTO, @MappingTarget User user) {
+    default void handleNulls(UserUpdateDTO userUpdateDTO, @MappingTarget MyUser myUser) {
         if (userUpdateDTO.getName() == null) {
-            user.setName(user.getName());
+            myUser.setName(myUser.getName());
         }
         if (userUpdateDTO.getEmail() == null) {
-            user.setEmail(user.getEmail());
+            myUser.setEmail(myUser.getEmail());
         }
         if (userUpdateDTO.getAddress() == null) {
-            user.setAddress(user.getAddress());
+            myUser.setAddress(myUser.getAddress());
         }
         if (userUpdateDTO.getPhoneNumber() == null) {
-            user.setPhoneNumber(user.getPhoneNumber());
+            myUser.setPhoneNumber(myUser.getPhoneNumber());
         }
         if (userUpdateDTO.getDateOfBirth() == null) {
-            user.setDateOfBirth(user.getDateOfBirth());
+            myUser.setDateOfBirth(myUser.getDateOfBirth());
         }
     }
 }

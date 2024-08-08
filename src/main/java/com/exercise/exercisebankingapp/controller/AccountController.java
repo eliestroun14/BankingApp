@@ -2,25 +2,32 @@ package com.exercise.exercisebankingapp.controller;
 
 import com.exercise.exercisebankingapp.dataTransferObject.MoneyRequest;
 import com.exercise.exercisebankingapp.entity.Account;
-import com.exercise.exercisebankingapp.mapper.MoneyRequestMapper;
-import com.exercise.exercisebankingapp.repository.AccountRepository;
+import com.exercise.exercisebankingapp.exception.AccountNotFoundException;
+import com.exercise.exercisebankingapp.exception.UserNotFoundException;
+import com.exercise.exercisebankingapp.repository.UserRepository;
 import com.exercise.exercisebankingapp.service.AccountService;
+import com.exercise.exercisebankingapp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path ="/api/account")
 public class AccountController {
 
     private final AccountService accountService;
-    private final AccountRepository accountRepository;
+    private final UserService userService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public AccountController(AccountService accountService, AccountRepository accountRepository) {
+    public AccountController(AccountService accountService, UserService userService, UserRepository userRepository) {
         this.accountService = accountService;
-        this.accountRepository = accountRepository;
+        this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/all")
@@ -31,11 +38,19 @@ public class AccountController {
     // find account with account id
     @GetMapping({"/{accountId}"})
     public Account getAccountById(@PathVariable Long accountId) {
-        return accountService.getAccountById(accountId);
+        try {
+            return accountService.getAccountById(accountId);
+        } catch (AccountNotFoundException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Account not found"
+            );
+        }
     }
 
     // find account with account number
-    /*@GetMapping({"/{accountNumber}"})
+    /*
+    /@GetMapping({"/{accountNumber}"})
     public Account getAccountByNumber(@PathVariable String accountNumber) {
         return accountService.getAccountByNumber(accountNumber);
     }*/
@@ -43,64 +58,96 @@ public class AccountController {
     // find account list with user id
     @GetMapping({"/userId/{userId}"})
     public List<Account> getUserAccounts(@PathVariable Long userId) {
-        return accountService.getUserAccountsByUserId(userId);
+        try {
+            return userService.getUserAccounts(userId);
+        } catch (UserNotFoundException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "MyUser not found"
+            );
+        }
     }
 
-    // find account list with the User name
+    /* find account list with the Username
     @GetMapping({"/userName/{userName}"})
     public List<Account> getUserAccounts(@PathVariable String userName) {
-        return accountService.getUserAccountsByUserName(userName);
-    }
+        try {
+            return accountService.getUserAccountsByUserName(userName);
+        } catch (UserNotFoundException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "MyUser not found"
+            );
+        }
+    }*/
 
     // find money with account id
     @GetMapping({"/money/{accountId}"})
     public double getAccountMoney(@PathVariable Long accountId) {
-        return accountService.getAccountMoneyByAccountId(accountId);
+        try {
+            return accountService.getAccountMoneyByAccountId(accountId);
+        } catch (AccountNotFoundException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Account not found"
+            );
+        }
     }
 
     // find total money with user id (sum of all account money)
     @GetMapping({"/allBalance/{userId}"})
     public double getUserTotalMoney(@PathVariable Long userId) {
-        List<Account> accounts = accountService.getUserAccountsByUserId(userId);
-        double totalMoney = 0;
-        for (Account account : accounts) {
-            totalMoney += account.getBalance();
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "MyUser not found"
+            );
         }
-        return totalMoney;
+        return getUserAccounts(userId).stream()
+                .mapToDouble(Account::getBalance)
+                .sum();
     }
 
 
     // PUT
     // add money to account with account id + request body
     @PutMapping({"/addMoney/{accountId}"})
-    public double addMoney(@PathVariable Long accountId, @RequestBody MoneyRequest moneyRequest) {
-        Account account = accountService.getAccountById(accountId);
-        account.setBalance(account.getBalance() + moneyRequest.getMoney());
-        accountRepository.save(account);
-        return account.getBalance();
+    public double addMoney(@PathVariable Long accountId, @RequestBody MoneyRequest moneyRequest) throws Exception {
+        try {
+            return accountService.addMoney(accountId, moneyRequest);
+        } catch (AccountNotFoundException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Account not found"
+            );
+        }
     }
 
     // withdraw money from account with account id + request body
     @PutMapping({"/withdrawMoney/{accountId}"})
-    public double withdrawMoney(@PathVariable Long accountId, @RequestBody MoneyRequest moneyRequest) {
-        Account account = accountService.getAccountById(accountId);
-        // VERIFY if origin account balance TO BE IMPLEMENTED
-        account.setBalance(account.getBalance() - moneyRequest.getMoney());
-        accountRepository.save(account);
-        return account.getBalance();
+    public double withdrawMoney(@PathVariable Long accountId, @RequestBody MoneyRequest moneyRequest) throws Exception {
+        try {
+            return accountService.withdrawMoney(accountId, moneyRequest);
+        } catch (AccountNotFoundException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Account not found"
+            );
+        }
     }
+
 
     // transfer money from account with account id to account with account id + request body
     @PutMapping({"/transferMoney/{originAccountId}/{targetAccountId}"})
-    public double transferMoney(@PathVariable Long originAccountId, @PathVariable Long targetAccountId, @RequestBody MoneyRequest moneyRequest) {
-        Account originAccount = accountService.getAccountById(originAccountId);
-        Account targetAccount = accountService.getAccountById(targetAccountId);
-        // VERIFY if origin account balance TO BE IMPLEMENTED
-        originAccount.setBalance(originAccount.getBalance() - moneyRequest.getMoney());
-        targetAccount.setBalance(targetAccount.getBalance() + moneyRequest.getMoney());
-        accountRepository.save(originAccount);
-        accountRepository.save(targetAccount);
-        return originAccount.getBalance();
+    public double transferMoney(@PathVariable Long originAccountId, @PathVariable Long targetAccountId, @RequestBody MoneyRequest moneyRequest) throws Exception {
+        try {
+            return accountService.transferMoney(originAccountId, targetAccountId, moneyRequest);
+        } catch (AccountNotFoundException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Account not found"
+            );
+        }
     }
 
     // POST
@@ -108,20 +155,34 @@ public class AccountController {
     @PostMapping({"/openAccount/{userId}"})
     public Account openAccount(@PathVariable Long userId, @RequestBody Account account) {
         // VERIFY if user exists TO BE IMPLEMENTED
-        return accountService.createAccount(account, userId);
+        try {
+            return accountService.createAccount(account, userId);
+        } catch (UserNotFoundException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "body invalid"
+            );
+        }
     }
 
     // DELETE
     // close account with account id
     @DeleteMapping({"/closeAccount/{accountId}"})
     public double closeAccount(@PathVariable Long accountId) {
-        return accountService.deleteAccount(accountId);
+        try {
+            return accountService.deleteAccount(accountId);
+        } catch (AccountNotFoundException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Account not found"
+            );
+        }
     }
 
     // find account with account id
     // find account with account number
     // find account list with user id
-    // find account list with the User name
+    // find account list with the Username
     // find money with account id
     // Find account money with account number
     // find total money with user id (sum of all account money)

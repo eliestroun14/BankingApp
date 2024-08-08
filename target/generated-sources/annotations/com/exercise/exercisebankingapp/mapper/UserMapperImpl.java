@@ -1,20 +1,20 @@
 package com.exercise.exercisebankingapp.mapper;
 
 import com.exercise.exercisebankingapp.dataTransferObject.UserUpdateDTO;
-import com.exercise.exercisebankingapp.entity.User;
+import com.exercise.exercisebankingapp.entity.MyUser;
 import java.time.LocalDate;
 import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-08-05T12:07:20+0200",
+    date = "2024-08-08T10:23:18+0200",
     comments = "version: 1.5.2.Final, compiler: javac, environment: Java 22.0.1 (Oracle Corporation)"
 )
 public class UserMapperImpl implements UserMapper {
 
     @Override
-    public UserUpdateDTO userToUserUpdateDTO(User user) {
-        if ( user == null ) {
+    public UserUpdateDTO userToUserUpdateDTO(MyUser myUser) {
+        if ( myUser == null ) {
             return null;
         }
 
@@ -30,24 +30,24 @@ public class UserMapperImpl implements UserMapper {
     }
 
     @Override
-    public User userUpdateDTOToUser(UserUpdateDTO userUpdateDTO) {
+    public MyUser userUpdateDTOToUser(UserUpdateDTO userUpdateDTO) {
         if ( userUpdateDTO == null ) {
             return null;
         }
 
-        User user = new User();
+        MyUser myUser = new MyUser();
 
-        handleNulls( userUpdateDTO, user );
+        handleNulls( userUpdateDTO, myUser );
 
-        return user;
+        return myUser;
     }
 
     @Override
-    public void updateUserFromDTO(UserUpdateDTO userUpdateDTO, User user) {
+    public void updateUserFromDTO(UserUpdateDTO userUpdateDTO, MyUser myUser) {
         if ( userUpdateDTO == null ) {
             return;
         }
 
-        handleNulls( userUpdateDTO, user );
+        handleNulls( userUpdateDTO, myUser );
     }
 }

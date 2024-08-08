@@ -15,11 +15,11 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     @Query("SELECT s FROM Account s WHERE s.accountNumber = ?1")
     Optional<Account> findAccountByAccountNumber(String accountNumber);
 
-    @Query("SELECT s FROM Account s WHERE s.user.id = ?1")
+    @Query("SELECT s FROM Account s WHERE s.myUser.id = ?1")
     List<Account> findAccountsByUserId(Long userId);
 
-    @Query("SELECT s FROM Account s WHERE s.user.name = ?1")
-    List<Account> findAccountsByUserName(String userName);
+    @Query("SELECT s FROM Account s WHERE s.myUser.name = ?1")
+    Optional<List<Account>> findAccountsByUserName(String userName);
 
     @Query("SELECT s.balance FROM Account s WHERE s.id = ?1")
     double findAccountMoneyByAccountId(Long accountId);

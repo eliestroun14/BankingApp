@@ -13,16 +13,14 @@ import lombok.Setter;
 @Setter
 public class Account {
 
+    public void setStatus(MyUser.Status newStatus) {
+        this.accountStatus = newStatus;
+    }
+
     public enum AccountType {
         SAVINGS,
         PERSONAL,
         BUSINESS
-    }
-
-    public enum AccountStatus {
-        ONBOARDING,
-        ACTIVE,
-        CLOSED
     }
 
     @Id
@@ -30,30 +28,48 @@ public class Account {
     private Long id;
     private String accountNumber;
     private AccountType accountType;
-    private AccountStatus accountStatus;
+
+    @Enumerated(EnumType.STRING)
+    private MyUser.Status accountStatus;
     private Double balance;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     @JsonIgnore
-    private User user;
+    private MyUser myUser;
 
     public Account() {
         this.accountNumber = randomAccountNumber();
         this.balance = 0.0;
-        this.accountStatus = AccountStatus.ONBOARDING;
+        this.accountStatus = MyUser.Status.ONBOARDING;
         this.accountType = AccountType.PERSONAL;
+    }
+
+    public Account(MyUser myUser) {
+        this.accountNumber = randomAccountNumber();
+        this.myUser = myUser;
+        this.balance = 0.0;
+        this.accountType = AccountType.PERSONAL;
+        this.accountStatus = myUser.getStatus();
+    }
+
+    public Account(MyUser myUser, double balance) {
+        this.accountNumber = randomAccountNumber();
+        this.myUser = myUser;
+        this.balance = balance;
+        this.accountType = AccountType.PERSONAL;
+        this.accountStatus = myUser.getStatus();
     }
 
     private String randomAccountNumber() {
         return "AAFF" + (int) (Math.random() * 100000) + " " + (int) (Math.random() * 1000);
     }
 
-    public Account(String accountNumber, AccountType accountType, Double balance, User user) {
+    public Account(String accountNumber, AccountType accountType, Double balance, MyUser myUser) {
         this.accountNumber = accountNumber;
         this.accountType = accountType;
         this.balance = balance;
-        this.user = user;
+        this.myUser = myUser;
     }
 
     @Override
@@ -63,7 +79,7 @@ public class Account {
                 ", accountNumber='" + accountNumber + '\'' +
                 ", accountType=" + accountType +
                 ", balance=" + balance +
-                ", user=" + user +
+                ", MyUser=" + myUser +
                 '}';
     }
 

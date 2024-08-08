@@ -1,11 +1,11 @@
 //package com.exercise.exercisebankingapp.converter;
 //
 //import com.exercise.exercisebankingapp.dataTransferObject.UserUpdateDTO;
-//import com.exercise.exercisebankingapp.entity.User;
+//import com.exercise.exercisebankingapp.entity.MyUser;
 //
 //public class DTO2EntityConverter {
 //
-//    public static void updateEntityFromDTO(User user, UserUpdateDTO userUpdateDTO) {
+//    public static void updateEntityFromDTO(MyUser user, UserUpdateDTO userUpdateDTO) {
 //        if (userUpdateDTO.getUserName() != null) {
 //            user.setName(userUpdateDTO.getUserName());
 //        }

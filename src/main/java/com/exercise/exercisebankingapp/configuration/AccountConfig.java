@@ -1,7 +1,7 @@
 package com.exercise.exercisebankingapp.configuration;
 
 import com.exercise.exercisebankingapp.entity.Account;
-import com.exercise.exercisebankingapp.entity.User;
+import com.exercise.exercisebankingapp.entity.MyUser;
 import com.exercise.exercisebankingapp.repository.AccountRepository;
 import com.exercise.exercisebankingapp.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -17,22 +17,24 @@ public class AccountConfig {
     @Bean
     CommandLineRunner accountCommandLineRunner(AccountRepository accountRepository, UserRepository userRepository) {
 
-        User user2 = new User(
+        MyUser myUser2 = new MyUser(
                 "elie",
                 "elie@gmail.com",
                 LocalDate.of(2004, 5, 31),
                 "44 Quai Charles-Pages",
-                "06 75 15 89 32");
-        userRepository.save(user2);
+                "06 75 15 89 32",
+                MyUser.Role.USER,
+                "password",
+                MyUser.Status.ONBOARDING
+        );
+        userRepository.save(myUser2);
         return args -> {
             Account account1 = new Account(
-                    "AAFF676414111 331",
-                    Account.AccountType.PERSONAL,
-                    1000.0,
-                    user2
+                    myUser2,
+            1000.0
             );
             accountRepository.save(account1);
-            user2.setAccounts(List.of(account1));
+            myUser2.setAccounts(List.of(account1));
             System.out.println("Account added");
         };
     }
