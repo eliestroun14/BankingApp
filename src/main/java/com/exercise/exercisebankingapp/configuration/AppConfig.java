@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AppConfig {
 
-    @Value("${SECRET_KEY}")
+    @Value("${app.secret-key}")
     private String secretKey;
 
 }

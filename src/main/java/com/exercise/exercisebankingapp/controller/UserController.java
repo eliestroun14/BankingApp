@@ -1,13 +1,22 @@
 package com.exercise.exercisebankingapp.controller;
 
+import com.exercise.exercisebankingapp.dataTransferObject.AuthenticationRequest;
+import com.exercise.exercisebankingapp.dataTransferObject.AuthenticationResponse;
 import com.exercise.exercisebankingapp.dataTransferObject.UserRegisterDTO;
 import com.exercise.exercisebankingapp.dataTransferObject.UserUpdateDTO;
 import com.exercise.exercisebankingapp.entity.Account;
 import com.exercise.exercisebankingapp.entity.MyUser;
 import com.exercise.exercisebankingapp.exception.UserNotFoundException;
+import com.exercise.exercisebankingapp.security.util.JwtUtil;
+import com.exercise.exercisebankingapp.service.MyUserDetailsService;
 import com.exercise.exercisebankingapp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -18,10 +27,15 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private AuthenticationManager authenticationManager;
+    private final MyUserDetailsService myUserDetailsService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, MyUserDetailsService myUserDetailsService, JwtUtil jwtUtil) {
         this.userService = userService;
+        this.myUserDetailsService = myUserDetailsService;
+        this.jwtUtil = jwtUtil;
     }
 
     @GetMapping("/all")
@@ -56,10 +70,10 @@ public class UserController {
     @PostMapping("/register")
     public MyUser addUser(@RequestBody UserRegisterDTO userRegisterDTO) {
         if (userService.userExistsByEmail(userRegisterDTO.getEmail())) {
-                throw new ResponseStatusException(
-                        HttpStatus.CONFLICT,
-                        "MyUser with email already exists"
-                );
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "MyUser with email already exists"
+            );
         }
         // myUser.setPassword(passwordEncoder.encode(myUser.getPassword()));
         return userService.addUser(userRegisterDTO);
@@ -105,5 +119,18 @@ public class UserController {
         }
     }
 
-
+    @PostMapping("/login")
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authenticationRequest.getName(), authenticationRequest.getPassword())
+            );
+        } catch (BadCredentialsException e) {
+            throw new Exception("Incorrect username or password", e);
+        }
+        final UserDetails userDetails = myUserDetailsService
+                .loadUserByUsername(authenticationRequest.getName());
+        final String jwt = jwtUtil.generateToken(userDetails);
+        return ResponseEntity.ok(new AuthenticationResponse(jwt));
+    }
 }

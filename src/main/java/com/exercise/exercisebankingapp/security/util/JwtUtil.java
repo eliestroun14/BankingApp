@@ -15,7 +15,11 @@ import java.util.function.Function;
 @Service
 public class JwtUtil {
 
-    private AppConfig appConfig;
+    private final AppConfig appConfig;
+
+    public JwtUtil(AppConfig appConfig) {
+        this.appConfig = appConfig;
+    }
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
@@ -54,7 +58,4 @@ public class JwtUtil {
     private Claims extractAllClaims(String token) {
         return Jwts.parser().setSigningKey(appConfig.getSecretKey()).parseClaimsJws(token).getBody();
     }
-
-
-
 }
