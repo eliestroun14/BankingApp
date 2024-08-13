@@ -3,10 +3,10 @@ package com.exercise.exercisebankingapp.security.util;
 import com.exercise.exercisebankingapp.configuration.AppConfig;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,10 +15,10 @@ import java.util.function.Function;
 @Service
 public class JwtUtil {
 
-    private final AppConfig appConfig;
+    private final SecretKey secretKey;
 
     public JwtUtil(AppConfig appConfig) {
-        this.appConfig = appConfig;
+        this.secretKey = appConfig.secretKey();
     }
 
     public String generateToken(UserDetails userDetails) {
@@ -27,10 +27,14 @@ public class JwtUtil {
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
+        try {
         return Jwts.builder().setClaims(claims).setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(SignatureAlgorithm.HS256, appConfig.getSecretKey()).compact();
+                .signWith(secretKey).compact();
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
@@ -56,6 +60,6 @@ public class JwtUtil {
 
     }
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(appConfig.getSecretKey()).parseClaimsJws(token).getBody();
+        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
     }
 }

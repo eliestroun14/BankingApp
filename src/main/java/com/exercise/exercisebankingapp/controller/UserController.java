@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -27,13 +28,14 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
     private final MyUserDetailsService myUserDetailsService;
     private final JwtUtil jwtUtil;
 
     @Autowired
-    public UserController(UserService userService, MyUserDetailsService myUserDetailsService, JwtUtil jwtUtil) {
+    public UserController(UserService userService, AuthenticationManager authenticationManager, MyUserDetailsService myUserDetailsService, JwtUtil jwtUtil) {
         this.userService = userService;
+        this.authenticationManager = authenticationManager;
         this.myUserDetailsService = myUserDetailsService;
         this.jwtUtil = jwtUtil;
     }
@@ -119,18 +121,53 @@ public class UserController {
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
+//    @PostMapping("/login")
+//    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
+//        try {
+//            authenticationManager.authenticate(
+//                    new UsernamePasswordAuthenticationToken(authenticationRequest.getName(), authenticationRequest.getPassword())
+//            );
+//        } catch (BadCredentialsException e) {
+//            throw new Exception("Incorrect username or password", e);
+//        }
+//        final UserDetails userDetails = myUserDetailsService
+//                .loadUserByUsername(authenticationRequest.getName());
+//        final String jwt = jwtUtil.generateToken(userDetails);
+//        return ResponseEntity.ok(new AuthenticationResponse(jwt));
+//    }
+
+    //@PostMapping("/login")
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) {
         try {
-            authenticationManager.authenticate(
+            Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authenticationRequest.getName(), authenticationRequest.getPassword())
             );
+
+            // Check if authentication is successful
+            if (authentication.isAuthenticated()) {
+                final UserDetails userDetails = myUserDetailsService.loadUserByUsername(authenticationRequest.getName());
+                final String jwt = jwtUtil.generateToken(userDetails);
+                return ResponseEntity.ok(new AuthenticationResponse(jwt));
+            } else {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Bad credentials"
+                );
+
+            }
         } catch (BadCredentialsException e) {
-            throw new Exception("Incorrect username or password", e);
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Incorrect username or password"
+            );
+        } catch (Exception e) {
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "An error occurred"
+            );
         }
-        final UserDetails userDetails = myUserDetailsService
-                .loadUserByUsername(authenticationRequest.getName());
-        final String jwt = jwtUtil.generateToken(userDetails);
-        return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
+
+
 }
