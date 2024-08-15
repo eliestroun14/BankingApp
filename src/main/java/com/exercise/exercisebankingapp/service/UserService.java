@@ -11,6 +11,8 @@ import com.exercise.exercisebankingapp.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,13 +25,15 @@ public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, AccountRepository accountRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, AccountRepository accountRepository) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
-        this.passwordEncoder = passwordEncoder;
+    }
+
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     public List<MyUser> getAllUsers() {
@@ -64,7 +68,7 @@ public class UserService {
                 userRegisterDTO.getAddress(),
                 userRegisterDTO.getPhoneNumber(),
                 userRegisterDTO.getRole(),
-                passwordEncoder.encode(userRegisterDTO.getPassword()),
+                this.passwordEncoder().encode(userRegisterDTO.getPassword()),
                 userRegisterDTO.getStatus()
         );
         return userRepository.save(myUser);

@@ -5,13 +5,9 @@ import com.exercise.exercisebankingapp.dataTransferObject.UserUpdateDTO;
 import com.exercise.exercisebankingapp.entity.Account;
 import com.exercise.exercisebankingapp.entity.MyUser;
 import com.exercise.exercisebankingapp.exception.UserNotFoundException;
-import com.exercise.exercisebankingapp.repository.UserRepository;
-import com.exercise.exercisebankingapp.service.AccountService;
 import com.exercise.exercisebankingapp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -23,14 +19,9 @@ public class UserController {
 
     private final UserService userService;
 
-    private final PasswordEncoder passwordEncoder;
-    private final AccountService accountService;
-
     @Autowired
-    public UserController(UserService userService, UserRepository userRepository, PasswordEncoder passwordEncoder, AccountService accountService) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
-        this.accountService = accountService;
     }
 
     @GetMapping("/all")
