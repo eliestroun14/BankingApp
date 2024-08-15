@@ -8,12 +8,10 @@ import com.exercise.exercisebankingapp.exception.UserNotFoundException;
 import com.exercise.exercisebankingapp.mapper.UserMapper;
 import com.exercise.exercisebankingapp.repository.AccountRepository;
 import com.exercise.exercisebankingapp.repository.UserRepository;
+import com.exercise.exercisebankingapp.security.SecurityConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,15 +23,13 @@ public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
+    private final SecurityConfig securityConfig;
 
     @Autowired
-    public UserService(UserRepository userRepository, AccountRepository accountRepository) {
+    public UserService(UserRepository userRepository, AccountRepository accountRepository, SecurityConfig securityConfig) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
-    }
-
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        this.securityConfig = securityConfig;
     }
 
     public List<MyUser> getAllUsers() {
@@ -68,7 +64,7 @@ public class UserService {
                 userRegisterDTO.getAddress(),
                 userRegisterDTO.getPhoneNumber(),
                 userRegisterDTO.getRole(),
-                this.passwordEncoder().encode(userRegisterDTO.getPassword()),
+                securityConfig.passwordEncoder().encode(userRegisterDTO.getPassword()),
                 userRegisterDTO.getStatus()
         );
         return userRepository.save(myUser);
