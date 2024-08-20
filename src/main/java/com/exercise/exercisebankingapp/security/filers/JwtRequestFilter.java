@@ -20,8 +20,11 @@ import java.io.IOException;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    private MyUserDetailsService userDetailsService;
-    private JwtUtil jwtUtil;
+    static final String TOKEN_PREFIX = "Bearer ";
+    static final String HEADER_STRING = "Authorization";
+
+    private final MyUserDetailsService userDetailsService;
+    private final JwtUtil jwtUtil;
 
     public JwtRequestFilter(JwtUtil jwtUtil, MyUserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
@@ -31,14 +34,19 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest servletRequest, HttpServletResponse servletResponse, FilterChain filterChain)
             throws ServletException, IOException {
-        final String authorizationHeader = servletRequest.getHeader("Authorization");
+        final String authorizationHeader = servletRequest.getHeader(HEADER_STRING);
 
         String username = null;
         String Jwt = null;
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            Jwt = authorizationHeader.substring(7);
-            username = jwtUtil.extractUsername(Jwt);
+        if (authorizationHeader != null && authorizationHeader.startsWith(TOKEN_PREFIX)) {
+            Jwt = authorizationHeader.substring(TOKEN_PREFIX.length());
+            try {
+                username = jwtUtil.extractUsername(Jwt);
+                System.out.println("JWT Username: " + username); // debug
+            } catch (Exception e) {
+                System.out.println("Error extracting username: " + e.getMessage());
+            }
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -49,6 +57,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 );
                 usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(servletRequest));
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                System.out.println("User Authorities: " + userDetails.getAuthorities()); // debug
+            } else {
+                System.out.println("Invalid JWT token"); // debug
             }
         }
         filterChain.doFilter(servletRequest, servletResponse);

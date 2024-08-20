@@ -1,5 +1,6 @@
 package com.exercise.exercisebankingapp.security;
 
+import com.exercise.exercisebankingapp.entity.MyUser;
 import com.exercise.exercisebankingapp.security.filers.JwtRequestFilter;
 import com.exercise.exercisebankingapp.service.MyUserDetailsService;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -29,15 +31,22 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtRequestFilter jwtRequestFilter) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable) // Or configure CORS as needed
+                .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/api/user/register", "/api/user/login").permitAll()
+                                // public route
+                                .requestMatchers("/api/user/register", "/api/user/login", "/api/user/mytest", "/api/user/logout").permitAll()
+                                // user route hasAnyRole(MyUser.Role.USER.name(), MyUser.Role.ADMIN.name())
+                                .requestMatchers("/api/user/my-accounts", "/api/user/my-balance", "/api/user/my-infos").authenticated()
+                                // admin route
+                                .requestMatchers("/api/user/all", "/api/user/{userId}", "/api/user/accounts/{userId}", "/api/user/{userId}/status", "/api/account/**").hasRole(MyUser.Role.ADMIN.name())
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-                //.addFilterBefore(new UsernamePasswordAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class); // Example filter
+        //http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtRequestFilter, BasicAuthenticationFilter.class);
+                //.addFilterBefore(new UsernamePasswordAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class); //
+        System.out.println("SecurityFilterChain last");
         return http.build();
     }
 

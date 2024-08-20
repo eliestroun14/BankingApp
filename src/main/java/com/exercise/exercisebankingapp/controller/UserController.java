@@ -8,6 +8,7 @@ import com.exercise.exercisebankingapp.entity.Account;
 import com.exercise.exercisebankingapp.entity.MyUser;
 import com.exercise.exercisebankingapp.exception.UserNotFoundException;
 import com.exercise.exercisebankingapp.security.util.JwtUtil;
+import com.exercise.exercisebankingapp.service.AccountService;
 import com.exercise.exercisebankingapp.service.MyUserDetailsService;
 import com.exercise.exercisebankingapp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,13 +32,15 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final MyUserDetailsService myUserDetailsService;
     private final JwtUtil jwtUtil;
+    private final AccountService accountService;
 
     @Autowired
-    public UserController(UserService userService, AuthenticationManager authenticationManager, MyUserDetailsService myUserDetailsService, JwtUtil jwtUtil) {
+    public UserController(UserService userService, AuthenticationManager authenticationManager, MyUserDetailsService myUserDetailsService, JwtUtil jwtUtil, AccountService accountService) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.myUserDetailsService = myUserDetailsService;
         this.jwtUtil = jwtUtil;
+        this.accountService = accountService;
     }
 
     @GetMapping("/all")
@@ -70,7 +73,8 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public MyUser addUser(@RequestBody UserRegisterDTO userRegisterDTO) {
+    public ResponseEntity<?> addUser(@RequestBody UserRegisterDTO userRegisterDTO) {
+    //public MyUser addUser(@RequestBody UserRegisterDTO userRegisterDTO) {
         if (userService.userExistsByEmail(userRegisterDTO.getEmail())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
@@ -78,7 +82,9 @@ public class UserController {
             );
         }
         // myUser.setPassword(passwordEncoder.encode(myUser.getPassword()));
-        return userService.addUser(userRegisterDTO);
+        //return userService.addUser(userRegisterDTO);
+        userService.addUser(userRegisterDTO);
+        return createAuthenticationToken(new AuthenticationRequest(userRegisterDTO.getName(), userRegisterDTO.getPassword()));
     }
 
     @PutMapping("/{userId}")
@@ -136,8 +142,8 @@ public class UserController {
 //        return ResponseEntity.ok(new AuthenticationResponse(jwt));
 //    }
 
-    //@PostMapping("/login")
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    @PostMapping("/login")
+    //@RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -169,5 +175,33 @@ public class UserController {
         }
     }
 
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout() {
+        return ResponseEntity.ok("Logout successful");
+    }
+
+    @GetMapping("/my-accounts")
+    public List<Account> getMyAccounts(Authentication authentication) {
+        String username = authentication.getName();
+        return accountService.getUserAccountsByUserName(username);
+    }
+
+    @GetMapping("/my-balance")
+    public double getMyBalance(Authentication authentication) {
+        String username = authentication.getName();
+        MyUser myUser = userService.getUserByName(username);
+        return accountService.getUserTotalMoney(myUser.getId());
+    }
+
+    @GetMapping("/my-infos")
+    public MyUser getMyInfos(Authentication authentication) {
+        String username = authentication.getName();
+        return userService.getUserByName(username);
+    }
+
+    @GetMapping("/mytest")
+    public @ResponseBody String greeting() {
+        return "Hello World!";
+    }
 
 }

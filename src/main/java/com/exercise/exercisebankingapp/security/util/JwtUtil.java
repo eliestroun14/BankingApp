@@ -16,6 +16,7 @@ import java.util.function.Function;
 public class JwtUtil {
 
     private final SecretKey secretKey;
+    static final long EXPIRATIONTIME = 1000 * 60 * 60 * 10;
 
     public JwtUtil(AppConfig appConfig) {
         this.secretKey = appConfig.secretKey();
@@ -30,7 +31,7 @@ public class JwtUtil {
         try {
         return Jwts.builder().setClaims(claims).setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATIONTIME))
                 .signWith(secretKey).compact();
         } catch (Exception e) {
             throw e;
