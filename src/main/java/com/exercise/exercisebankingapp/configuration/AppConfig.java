@@ -1,5 +1,7 @@
 package com.exercise.exercisebankingapp.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
@@ -21,3 +23,4 @@ public class AppConfig {
     }
 
 }
+

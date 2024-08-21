@@ -46,7 +46,6 @@ public class SecurityConfig {
         //http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(jwtRequestFilter, BasicAuthenticationFilter.class);
                 //.addFilterBefore(new UsernamePasswordAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class); //
-        System.out.println("SecurityFilterChain last");
         return http.build();
     }
 

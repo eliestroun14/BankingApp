@@ -13,7 +13,7 @@ public class UserConfig {
 
     @Bean
     CommandLineRunner userCommandLineRunner(UserRepository userRepository) {
-        return args -> {
+        /*return args -> {
             MyUser myUser1 = new MyUser(
                     "John",
                     "John@gmail.com",
@@ -26,6 +26,8 @@ public class UserConfig {
                     );
             userRepository.save(myUser1);
             System.out.println("MyUser added");
+        };*/
+        return args -> {
         };
     }
 }

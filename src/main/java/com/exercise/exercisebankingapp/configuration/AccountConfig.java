@@ -17,7 +17,7 @@ public class AccountConfig {
     @Bean
     CommandLineRunner accountCommandLineRunner(AccountRepository accountRepository, UserRepository userRepository) {
 
-        MyUser myUser2 = new MyUser(
+        /*MyUser myUser2 = new MyUser(
                 "elie",
                 "elie@gmail.com",
                 LocalDate.of(2004, 5, 31),
@@ -27,7 +27,7 @@ public class AccountConfig {
                 "password",
                 MyUser.Status.ONBOARDING
         );
-        userRepository.save(myUser2);
+        /*userRepository.save(myUser2);
         return args -> {
             Account account1 = new Account(
                     myUser2,
@@ -36,6 +36,8 @@ public class AccountConfig {
             accountRepository.save(account1);
             myUser2.setAccounts(List.of(account1));
             System.out.println("Account added");
+        };*/
+        return args -> {
         };
     }
 }

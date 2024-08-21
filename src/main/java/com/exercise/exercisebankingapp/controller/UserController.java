@@ -75,6 +75,7 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> addUser(@RequestBody UserRegisterDTO userRegisterDTO) {
     //public MyUser addUser(@RequestBody UserRegisterDTO userRegisterDTO) {
+        System.out.println("UserRegisterDTO: " + userRegisterDTO);
         if (userService.userExistsByEmail(userRegisterDTO.getEmail())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
@@ -84,7 +85,7 @@ public class UserController {
         // myUser.setPassword(passwordEncoder.encode(myUser.getPassword()));
         //return userService.addUser(userRegisterDTO);
         userService.addUser(userRegisterDTO);
-        return createAuthenticationToken(new AuthenticationRequest(userRegisterDTO.getName(), userRegisterDTO.getPassword()));
+        return ResponseEntity.ok(createAuthenticationToken(new AuthenticationRequest(userRegisterDTO.getName(), userRegisterDTO.getPassword())));
     }
 
     @PutMapping("/{userId}")
@@ -145,13 +146,16 @@ public class UserController {
     @PostMapping("/login")
     //@RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) {
+        System.out.println("AuthenticationRequest: " + authenticationRequest);
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authenticationRequest.getName(), authenticationRequest.getPassword())
             );
 
             // Check if authentication is successful
+            //System.out.println("i'm here 1");
             if (authentication.isAuthenticated()) {
+                //System.out.println("i'm here 2");
                 final UserDetails userDetails = myUserDetailsService.loadUserByUsername(authenticationRequest.getName());
                 final String jwt = jwtUtil.generateToken(userDetails);
                 return ResponseEntity.ok(new AuthenticationResponse(jwt));
