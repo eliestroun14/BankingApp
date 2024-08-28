@@ -103,7 +103,7 @@ public class MyUser {;
         System.out.println("createInitialAccount");
         Account account = new Account();
         account.setMyUser(this);
-        account.setBalance(0.0);
+        account.setBalance(100.0);
         //accountService.addAccount(account);
         this.accounts.add(account);
     }

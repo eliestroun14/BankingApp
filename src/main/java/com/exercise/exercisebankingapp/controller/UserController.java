@@ -1,5 +1,6 @@
 package com.exercise.exercisebankingapp.controller;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
 import com.exercise.exercisebankingapp.dataTransferObject.AuthenticationRequest;
 import com.exercise.exercisebankingapp.dataTransferObject.AuthenticationResponse;
 import com.exercise.exercisebankingapp.dataTransferObject.UserRegisterDTO;
@@ -22,7 +23,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/api/user")
@@ -190,12 +193,30 @@ public class UserController {
         return accountService.getUserAccountsByUserName(username);
     }
 
-    @GetMapping("/my-balance")
-    public double getMyBalance(Authentication authentication) {
-        String username = authentication.getName();
-        MyUser myUser = userService.getUserByName(username);
-        return accountService.getUserTotalMoney(myUser.getId());
+//    @GetMapping("/my-balance")
+//    public double getMyBalance(Authentication authentication) {
+//        System.out.println("debug getBalance");
+//        String username = authentication.getName();
+//        MyUser myUser = userService.getUserByName(username);
+//        System.out.println("debug getBalance user = " + myUser + myUser.getAccounts());
+//        double totalBalance = accountService.getUserTotalMoney(myUser.getId());
+//        System.out.println("debug getBalance totalBalance = " + totalBalance);
+//        return totalBalance;
+//    }
+
+    @GetMapping("/api/user/my-balance")
+    public ResponseEntity<Map<String, Double>> getMyBalance(Authentication authentication) {
+        // Assume userService and accountService are properly injected
+        MyUser user = (MyUser) authentication.getPrincipal();
+        double totalBalance = accountService.getUserAccountsByUserId(user.getId())
+                .stream()
+                .mapToDouble(Account::getBalance)
+                .sum();
+        Map<String, Double> response = new HashMap<>();
+        response.put("totalBalance", totalBalance);
+        return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/my-infos")
     public MyUser getMyInfos(Authentication authentication) {

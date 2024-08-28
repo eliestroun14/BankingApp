@@ -1,5 +1,6 @@
 package com.exercise.exercisebankingapp.service;
 
+import com.exercise.exercisebankingapp.controller.UserController;
 import com.exercise.exercisebankingapp.dataTransferObject.MoneyRequest;
 import com.exercise.exercisebankingapp.entity.Account;
 import com.exercise.exercisebankingapp.entity.MyUser;
@@ -100,13 +101,16 @@ public class AccountService {
     }
 
     public double getUserTotalMoney(Long userId) {
-        List<Account> accounts = getUserAccountsByUserId(userId);
+        System.out.println("getUserTotalMoney");
+        List<Account> accounts = accountRepository.findAccountsByUserId(userId);    // This line should be invoked
+        System.out.println("accounts: " + accounts);
         double totalMoney = 0;
         for (Account account : accounts) {
             totalMoney += account.getBalance();
         }
         return totalMoney;
     }
+
 
     public double addMoney(Long accountId, MoneyRequest moneyRequest) throws Exception {
         Account account = getAccountById(accountId);

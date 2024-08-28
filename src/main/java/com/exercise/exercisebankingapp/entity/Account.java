@@ -61,7 +61,7 @@ public class Account {
         this.accountStatus = myUser.getStatus();
     }
 
-    private String randomAccountNumber() {
+    public static String randomAccountNumber() {
         return "AAFF" + (int) (Math.random() * 100000) + " " + (int) (Math.random() * 1000);
     }
 
